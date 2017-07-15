@@ -7,9 +7,10 @@ Created on Fri Jul 14 20:33:43 2017
 
 import smtplib
 import email
-import string
 import getpass
 import sys
+import os
+
 from validate_email import validate_email
 
 class mailMsg:
@@ -27,21 +28,26 @@ class mailMsg:
         msg=""
         while True:
             input_=sys.stdin.readline()
-            msg=msg+input_
             if input_=='':
                 break
-        print "Msg written is:",msg
+            else:   msg=msg+input_
         return msg
 
     def showDetails(self):
-        print "Loginid:",self.loginid
-        print "Message:",self.message
+        print "\nLoginid:",self.loginid
         print "DestAddr:",self.destaddr
+        print "Message:",self.message
 
 validOptions=("first","login","pass","message","destaddr")
 
-server = smtplib.SMTP('smtp.gmail.com',587)
-server.starttls()
+try:
+    server = smtplib.SMTP('smtp.gmail.com',587)
+    server.starttls()
+except Exception as e:
+    print "",e
+    print "Exiting"
+    os.sys.exit(1)    
+
 
 mailMsg1=mailMsg()
 
@@ -49,7 +55,7 @@ while 1:
     if mailMsg1.contextChanged != "n":
         if(mailMsg1.contextChanged.lower()=="login" or \
             mailMsg1.contextChanged =="first"): \
-            mailMsg1.loginid=mailMsg1.loginidParse(raw_input("Enter your login:"))
+            mailMsg1.loginid=mailMsg1.loginidParse(raw_input("Enter your gmail loginid:"))
 
         if(mailMsg1.contextChanged.lower()=="pass" or mailMsg1.contextChanged =="first"): \
             mailMsg1.password=getpass.getpass("Enter the password:")
@@ -69,7 +75,7 @@ while 1:
         input=raw_input("Correct(Y/N)?")
 
         try:
-            if input.lower() == "y":            
+            if input.lower() != "n":            
                 server.login(mailMsg1.loginid+"@gmail.com",mailMsg1.password)
                 server.sendmail(mailMsg1.destaddr , mailMsg1.loginid+"@gmail.com",mailMsg1.message)
             else:

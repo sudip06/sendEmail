@@ -12,8 +12,9 @@ license='Common License',
 install_requires=[
 "smtplib",
 "email",
-"string",
 "getpass",
+"sys",
+"os",
 ],
 long_description="",
 )
