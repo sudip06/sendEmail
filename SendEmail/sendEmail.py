@@ -9,43 +9,75 @@ import smtplib
 import email
 import string
 import getpass
-
+import sys
 from validate_email import validate_email
 
-def loginidParse(loginidStr):
-    return loginidStr.split("@")[0]
+class mailMsg:
+    def __init__(self):
+        self.contextChanged="first"
+        self.loginid=""
+        self.password=""
+        self.message=""
+        self.destaddr=""
+    def loginidParse(self, loginidStr):
+        return loginidStr.split("@")[0]
     
+    def msgParse(self):
+        print "Enter Message, end with ^D on a new line:"
+        msg=""
+        while True:
+            input_=sys.stdin.readline()
+            msg=msg+input_
+            if input_=='':
+                break
+        print "Msg written is:",msg
+        return msg
+
+    def showDetails(self):
+        print "Loginid:",self.loginid
+        print "Message:",self.message
+        print "DestAddr:",self.destaddr
+
 validOptions=("first","login","pass","message","destaddr")
 
 server = smtplib.SMTP('smtp.gmail.com',587)
 server.starttls()
-contextChanged = "first"
+
+mailMsg1=mailMsg()
+
 while 1:
-    if contextChanged != "n":
+    if mailMsg1.contextChanged != "n":
+        if(mailMsg1.contextChanged.lower()=="login" or \
+            mailMsg1.contextChanged =="first"): \
+            mailMsg1.loginid=mailMsg1.loginidParse(raw_input("Enter your login:"))
+
+        if(mailMsg1.contextChanged.lower()=="pass" or mailMsg1.contextChanged =="first"): \
+            mailMsg1.password=getpass.getpass("Enter the password:")
+
+        if(mailMsg1.contextChanged.lower()=="message" or mailMsg1.contextChanged =="first"): \
+            mailMsg1.message=mailMsg1.msgParse()
+
+        if(mailMsg1.contextChanged.lower()=="destaddr" or mailMsg1.contextChanged =="first"): \
+            mailMsg1.destaddr =raw_input("Destination mail id:")
+
+        if mailMsg1.contextChanged.lower() not in validOptions:
+            print ("Invalid entry, retry")
+            contextChanged=raw_input("Which one do you wish(login/pass/message/destaddr) to correct?")
+            continue
+
+        mailMsg1.showDetails()
+        input=raw_input("Correct(Y/N)?")
+
         try:
-            if(contextChanged.lower()=="login" or contextChanged =="first"): loginid=loginidParse(raw_input("Enter your login:"))
-            if(contextChanged.lower()=="pass" or contextChanged =="first"): password=getpass.getpass("Enter the password:")
-            if(contextChanged.lower()=="message" or contextChanged =="first"): msg=raw_input("Enter the message:")
-            if(contextChanged.lower()=="destaddr" or contextChanged =="first"): destinationMailid=raw_input("Destination mail id:") 
-            if contextChanged.lower() not in validOptions:
-		print ("Invalid entry, retry")
-                contextChanged=raw_input("Which one do you wish(login/pass/message/destaddr) to correct?")
-		continue
-            input=raw_input("Correct(Y/N)?")
             if input.lower() == "y":            
-                server.login(loginid+"@gmail.com",password)
-                server.sendmail(destinationMailid, loginid+"@gmail.com",msg)
+                server.login(mailMsg1.loginid+"@gmail.com",mailMsg1.password)
+                server.sendmail(mailMsg1.destaddr , mailMsg1.loginid+"@gmail.com",mailMsg1.message)
             else:
-                contextChanged=raw_input("Which one do you wish(login/pass/message/destaddr) to correct?")
+                mailMsg1.contextChanged=raw_input("Which one do you wish(login/pass/message/destaddr) to correct?")
                 continue
         except smtplib.SMTPAuthenticationError:
             print "Enter the credentials correctly"
-            contextChanged="p"            
+            mailMsg1.contextChanged="pass"
             continue
     break
-
-
-server.quit()   
-
-
-
+server.quit()
