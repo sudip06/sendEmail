@@ -15,6 +15,9 @@ install_requires=[
 "getpass",
 "sys",
 "os",
+"json",
+"readline",
+"collections",
 ],
 long_description="",
 )
